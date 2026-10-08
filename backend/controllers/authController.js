@@ -17,19 +17,19 @@ exports.signup = async (req, res) => {
     const { name, email, password } = req.body;
 
     if (!name || !email || !password) {
-      return res.status(400).json({ message: 'Name, email aur password zaroori hain' });
+      return res.status(400).json({ message: 'Name, email and password are required' });
     }
     if (password.length < 6) {
-      return res.status(400).json({ message: 'Password kam se kam 6 characters ka ho' });
+      return res.status(400).json({ message: 'Password must be at least 6 characters' });
     }
 
     const exists = await User.findOne({ email: email.toLowerCase() });
     if (exists) {
-      return res.status(409).json({ message: 'Ye email already registered hai' });
+      return res.status(409).json({ message: 'This email is already registered' });
     }
 
     const hashed = await bcrypt.hash(password, 10);
-    // role yahan se kabhi nahi lete, signup karne wala hamesha citizen banega
+    // never take role from the request, signup always creates a citizen
     const user = await User.create({ name, email, password: hashed });
 
     res.status(201).json({ token: makeToken(user), user: safeUser(user) });
@@ -44,13 +44,13 @@ exports.login = async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ message: 'Email aur password zaroori hain' });
+      return res.status(400).json({ message: 'Email and password are required' });
     }
 
     const user = await User.findOne({ email: email.toLowerCase() });
     const ok = user && (await bcrypt.compare(password, user.password));
     if (!ok) {
-      return res.status(401).json({ message: 'Email ya password galat hai' });
+      return res.status(401).json({ message: 'Invalid email or password' });
     }
 
     res.json({ token: makeToken(user), user: safeUser(user) });
