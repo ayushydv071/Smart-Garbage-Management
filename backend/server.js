@@ -11,8 +11,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Routes (add karo baad mein)
-// app.use('/api/auth', require('./routes/auth'));
+// Routes
+app.use('/auth', require('./routes/authRoutes'));
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGO_URI)
