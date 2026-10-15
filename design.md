@@ -2,9 +2,9 @@
 ## Smart Garbage Management System
 
 **Author:** Ayush
-**Version:** 1.0
+**Version:** 1.1
 **Status:** Draft
-**Last Updated:** September 24, 2026
+**Last Updated:** October 7, 2026
 
 ---
 
@@ -57,6 +57,8 @@ Government portals prioritize legibility over character. Recommended:
 | Helper/caption text | 13px | Regular |
 
 Line length kept under 75 characters for body text and form helper text, so paragraphs (e.g., complaint descriptions, policy notes) stay easy to scan.
+
+**Weight as hierarchy:** section titles and card headings use Semibold; helper text, timestamps, and metadata use Regular weight at a muted dark-brown tint (e.g., 60% opacity) rather than full-strength text color — this lets the eye separate "what this is" from "detail about it" without needing a size change on every element.
 
 ---
 
@@ -120,9 +122,7 @@ Full-width map (Leaflet) with the zone's route drawn in blue, stop markers in da
 Built mobile-first, since staff will likely check this on a phone during collection. A plain vertical checklist: each stop as a row with address, a "Mark Complete" button, and a "Skip" option with a required reason field. No map decoration needed here — the list is the interface.
 
 ### 5.7 Admin Dashboard
-The one screen allowed to be table-heavy and dense, since admins are doing structured management work, not casual browsing.
-- **Top Row KPI Cards:** Clean summary stat cards (Total Complaints, Pending vs. Resolved, Special Pickup Revenue, Daily Stops Completed) using flat cards with subtle borders.
-- **Management Tabs:** Tabs for Complaints / Pickups / Zones / Daily Routes, each featuring a sortable data table with status badges using the functional color extensions from Section 2.
+The one screen allowed to be table-heavy and dense, since admins are doing structured management work, not casual browsing. Tabs for Complaints / Pickups / Zones, each a sortable table with status badges using the functional color extensions from Section 2.
 
 ---
 
@@ -134,7 +134,7 @@ The one screen allowed to be table-heavy and dense, since admins are doing struc
 | Secondary button | Cream background, blue border and text |
 | Input field | Cream background, dark-brown 1px border, blue border on focus |
 | Status badge | Pill-shaped, colored per Section 2's functional extensions, dark-brown text |
-| Card | Cream surface, thin dark-brown border at low opacity, 6px radius, no drop shadow |
+| Card | Cream surface, thin dark-brown border at low opacity, 6px radius, no drop shadow — padding kept consistent (16-20px) across all cards rather than varying per screen, so density reads as intentional, not accidental |
 | Navigation bar | Blue background, cream text — the one place blue is used as a dominant surface color, giving the app a consistent "header" identity across all roles |
 
 ---
@@ -150,7 +150,46 @@ The one screen allowed to be table-heavy and dense, since admins are doing struc
 
 ## 8. What This Design Deliberately Avoids
 In keeping with the "simple, government-style" brief:
-- No gradients, no drop shadows, no decorative illustrations
+- No gradients, no decorative illustrations
 - No animated page-load sequences — transitions only respond to user actions (e.g., a status changing color when updated, not a scroll-triggered fade-in)
 - No dark mode requirement for v1 — a single, consistent light theme matches the "official portal" feel and reduces build time
 - No dense marketing copy — every screen's text is instructional ("Select a pickup date") rather than persuasive
+- No heavy card shadows or large border-radius (see Section 4) — kept flat and square-ish rather than adopting a generic "rounded SaaS" look
+
+---
+
+## 9. Role Switching — Demo/Dev Mode Only
+
+The role selection should never live in the public header as a casual dropdown next to Login — that's a real production anti-pattern (exposes role-switching to anyone, looks unfinished to an evaluator judging it as a real product).
+
+- **After login:** replace any header role indicator with a standard user avatar/profile menu (name, role shown as a small label, logout).
+- **For jury/evaluator demos specifically:** add a small collapsible "Demo Toolbar" pinned to a bottom corner of the screen, closed by default, that lets a reviewer switch between Citizen/Staff/Admin views quickly without digging through separate logins. Style it visibly differently from the rest of the UI (e.g., a dashed border, a small "DEMO" label) so it reads as a reviewer convenience, not a real app feature.
+
+---
+
+## 10. Admin Table Polish
+
+Extends Section 5.7 (Admin Dashboard) and Section 6 (Component Style Guide):
+
+- **Pagination footer:** every data table shows "Showing 1–10 of 48 entries" with page controls — never an unbounded scrolling table once data scales past a screen or two.
+- **Row hover state:** a subtle background shift on hover (a few percent darker than the cream surface, not a strong highlight) — functional, confirms the row is interactive, doesn't fight the flat aesthetic.
+- **Dropdown overflow:** any in-table dropdown (e.g., "Assigned Staff") must be allowed to render outside the table's clipping bounds (use a portal/overlay pattern, not `overflow: hidden` on the table container).
+- **Status pills with icons:** pair each status badge with a small functional icon, not just color — a spinner-style icon for "In Progress," a checkmark for "Resolved," a clock for "Pending." This directly reinforces Section 7's accessibility rule (never convey status by color alone) rather than adding decoration.
+
+---
+
+## 11. Micro-Interactions & Feedback
+
+This is a genuine gap in the original plan — Section 8 ruled out decorative motion, but confirming an action happened is functional feedback, not decoration, so it belongs:
+
+- **Toasts:** a small, flat (no shadow/gradient) toast in the corner on key actions — "Complaint CMP-2026-0891 resolved," "Pickup request submitted." Use the functional status colors from Section 2 (blue for success, dark-brown-on-coral for errors) rather than introducing a new green.
+- **Button loading state:** when an action triggers an API call (Resolve, Submit, Pay), the button shows a small inline spinner and disables itself — prevents double-submits and makes the UI feel responsive. Keep it to the button itself, not a full-page loading overlay, to stay consistent with the "no unnecessary motion" rule.
+
+---
+
+## 12. Live Map — Restrained Motion
+
+Extends Section 5.5. A fully static truck marker is hard to read as "live," so a small amount of motion is justified here specifically — but keep it restrained, not decorative:
+
+- **Adopt:** a simple pulsing ring around the active truck marker (opacity/scale animation only, using the blue from Section 2) — signals "this is live" without adding a glow/gradient effect that would break Section 8's "no gradients" rule.
+- **Marker popup:** clicking a stop or the truck marker opens a small flat card (same card style as Section 6) showing driver name, vehicle identifier, and ETA — functional detail on demand, not shown by default (keeps the map itself uncluttered).

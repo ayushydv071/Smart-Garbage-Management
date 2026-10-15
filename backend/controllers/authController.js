@@ -59,3 +59,7 @@ exports.login = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+exports.getMe = (req, res) => {
+  res.json({ user: safeUser(req.user) });
+};
