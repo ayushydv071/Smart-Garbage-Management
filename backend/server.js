@@ -13,6 +13,9 @@ app.use(express.json());
 
 // Routes
 app.use('/auth', require('./routes/authRoutes'));
+app.use('/zones', require('./routes/zoneRoutes'));
+app.use('/routes', require('./routes/routeRoutes'));
+app.use('/daily-routes', require('./routes/dailyRouteRoutes'));
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGO_URI)
