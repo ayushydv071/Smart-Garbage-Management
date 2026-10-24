@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const cors = require('cors');
+const path = require('path');
 
 dotenv.config();
 
@@ -16,6 +17,8 @@ app.use('/auth', require('./routes/authRoutes'));
 app.use('/zones', require('./routes/zoneRoutes'));
 app.use('/routes', require('./routes/routeRoutes'));
 app.use('/daily-routes', require('./routes/dailyRouteRoutes'));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/complaints', require('./routes/complaintRoutes'));
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGO_URI)
