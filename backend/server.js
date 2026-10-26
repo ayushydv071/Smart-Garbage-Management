@@ -19,6 +19,7 @@ app.use('/routes', require('./routes/routeRoutes'));
 app.use('/daily-routes', require('./routes/dailyRouteRoutes'));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/complaints', require('./routes/complaintRoutes'));
+app.use('/pickups', require('./routes/pickupRoutes'));
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGO_URI)
