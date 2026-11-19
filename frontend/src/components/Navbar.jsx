@@ -4,16 +4,8 @@ import { useApp } from '../context/AppContext';
 import { Trash2, User, Shield, Truck, LogOut, CheckCircle } from 'lucide-react';
 
 export const Navbar = () => {
-  const { currentRole, currentUser, switchRole } = useApp();
+  const { currentRole, currentUser } = useApp();
   const navigate = useNavigate();
-
-  const handleRoleChange = (e) => {
-    const newRole = e.target.value;
-    switchRole(newRole);
-    if (newRole === 'citizen') navigate('/dashboard');
-    if (newRole === 'staff') navigate('/staff-route');
-    if (newRole === 'admin') navigate('/admin');
-  };
 
   return (
     <header>
@@ -110,31 +102,50 @@ export const Navbar = () => {
             )}
           </ul>
 
-          {/* Persona / Role Quick Switcher & Active User */}
+          {/* Production User Profile & Logout per Section 9 of design.md */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div className="persona-switcher" title="Switch role for Week 1 UI testing">
-              <label htmlFor="role-select" style={{ color: 'var(--color-cream)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                Role:
-              </label>
-              <select
-                id="role-select"
-                value={currentRole}
-                onChange={handleRoleChange}
+            <div
+              className="user-profile-badge"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '4px 10px',
+                borderRadius: 'var(--radius-sm)',
+                backgroundColor: 'rgba(0, 0, 0, 0.18)',
+              }}
+            >
+              <div
                 style={{
+                  width: '26px',
+                  height: '26px',
+                  borderRadius: '50%',
                   backgroundColor: 'var(--color-cream)',
-                  color: 'var(--color-dark-brown)',
-                  border: 'none',
-                  borderRadius: '3px',
-                  padding: '3px 8px',
+                  color: 'var(--color-blue)',
+                  fontWeight: 700,
                   fontSize: '12px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}
               >
-                <option value="citizen">Citizen (Ayush)</option>
-                <option value="staff">Staff/Driver (Ramesh)</option>
-                <option value="admin">Admin (Dr. Sunita)</option>
-              </select>
+                {currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}
+              </div>
+              <div style={{ lineHeight: 1.15 }}>
+                <div style={{ color: 'var(--color-cream)', fontSize: '13px', fontWeight: 600 }}>
+                  {currentUser?.name || 'User'}
+                </div>
+                <div
+                  style={{
+                    fontSize: '10px',
+                    color: 'rgba(245, 235, 221, 0.85)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.4px',
+                  }}
+                >
+                  {currentRole === 'citizen' ? 'Citizen' : currentRole === 'staff' ? 'Staff / Driver' : 'Administrator'}
+                </div>
+              </div>
             </div>
 
             <Link
@@ -146,14 +157,14 @@ export const Navbar = () => {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '4px',
-                padding: '4px 8px',
+                padding: '6px 10px',
                 borderRadius: '4px',
                 border: '1px solid rgba(245, 235, 221, 0.3)',
               }}
-              title="Go to Login / Signup"
+              title="Sign Out / Change Account"
             >
               <LogOut size={14} />
-              <span>Login</span>
+              <span>Logout</span>
             </Link>
           </div>
         </div>

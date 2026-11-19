@@ -2,17 +2,16 @@ import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { StatusBadge } from '../components/StatusBadge';
 import {
-  BarChart3,
   FileText,
   Package,
   Map,
   Truck,
-  Users,
-  CheckCircle,
   Clock,
   IndianRupee,
   Search,
-  Filter
+  ChevronLeft,
+  ChevronRight,
+  Loader2
 } from 'lucide-react';
 
 export const AdminDashboard = () => {
@@ -21,6 +20,14 @@ export const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('complaints'); // 'complaints' | 'pickups' | 'zones' | 'tracking'
   const [statusFilter, setStatusFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Section 10: Pagination state
+  const [complaintsPage, setComplaintsPage] = useState(1);
+  const [pickupsPage, setPickupsPage] = useState(1);
+  const PAGE_SIZE = 5;
+
+  // Section 11: Button loading state for actions
+  const [loadingAction, setLoadingAction] = useState(null); // { id, action }
 
   // Filter complaints
   const filteredComplaints = complaints.filter((c) => {
@@ -41,6 +48,21 @@ export const AdminDashboard = () => {
       p.citizenName.toLowerCase().includes(searchQuery.toLowerCase())
     );
   });
+
+  // Paginated slices
+  const totalComplaintPages = Math.ceil(filteredComplaints.length / PAGE_SIZE) || 1;
+  const paginatedComplaints = filteredComplaints.slice((complaintsPage - 1) * PAGE_SIZE, complaintsPage * PAGE_SIZE);
+
+  const totalPickupPages = Math.ceil(filteredPickups.length / PAGE_SIZE) || 1;
+  const paginatedPickups = filteredPickups.slice((pickupsPage - 1) * PAGE_SIZE, pickupsPage * PAGE_SIZE);
+
+  const handleActionClick = (complaintId, newStatus, actionName) => {
+    setLoadingAction({ id: complaintId, action: actionName });
+    setTimeout(() => {
+      updateComplaintStatus(complaintId, newStatus);
+      setLoadingAction(null);
+    }, 500);
+  };
 
   return (
     <div>
@@ -99,12 +121,12 @@ export const AdminDashboard = () => {
         </div>
 
         {/* KPI 3: Special Pickup Revenue */}
-        <div className="card" style={{ borderLeft: '4px solid #2B7A4B' }}>
+        <div className="card" style={{ borderLeft: '4px solid var(--color-blue)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
             <span style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', color: 'var(--color-dark-brown-muted)' }}>
               Special Pickup Revenue
             </span>
-            <IndianRupee size={18} color="#2B7A4B" />
+            <IndianRupee size={18} color="var(--color-blue)" />
           </div>
           <div style={{ fontSize: '28px', fontWeight: 700, color: 'var(--color-dark-brown)' }}>
             ₹{kpiStats.specialPickupRevenue.toLocaleString('en-IN')}
@@ -155,6 +177,8 @@ export const AdminDashboard = () => {
               onClick={() => {
                 setActiveTab(tab.key);
                 setSearchQuery('');
+                setComplaintsPage(1);
+                setPickupsPage(1);
               }}
               style={{
                 display: 'inline-flex',
@@ -203,7 +227,11 @@ export const AdminDashboard = () => {
               style={{ paddingLeft: '32px' }}
               placeholder={`Search ${activeTab}...`}
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setComplaintsPage(1);
+                setPickupsPage(1);
+              }}
             />
           </div>
         </div>
@@ -215,7 +243,10 @@ export const AdminDashboard = () => {
               className="form-select"
               style={{ width: 'auto', padding: '6px 12px', fontSize: '13px' }}
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setComplaintsPage(1);
+              }}
             >
               <option value="all">All Statuses</option>
               <option value="submitted">Submitted</option>
@@ -226,137 +257,229 @@ export const AdminDashboard = () => {
         )}
       </div>
 
-      {/* TAB 1: COMPLAINTS TABLE */}
+      {/* TAB 1: COMPLAINTS TABLE WITH PAGINATION */}
       {activeTab === 'complaints' && (
-        <div className="table-container">
-          <table className="civic-table">
-            <thead>
-              <tr>
-                <th>Ticket ID</th>
-                <th>Citizen</th>
-                <th>Category</th>
-                <th>Location / Ward</th>
-                <th>Logged At</th>
-                <th>Assigned Staff</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredComplaints.length === 0 ? (
+        <div>
+          <div className="table-container">
+            <table className="civic-table">
+              <thead>
                 <tr>
-                  <td colSpan={8} style={{ textAlign: 'center', padding: '24px', color: 'var(--color-dark-brown-muted)' }}>
-                    No complaints matching current filter.
-                  </td>
+                  <th>Ticket ID</th>
+                  <th>Citizen</th>
+                  <th>Category</th>
+                  <th>Location / Ward</th>
+                  <th>Logged At</th>
+                  <th>Assigned Staff</th>
+                  <th>Status</th>
+                  <th>Actions</th>
                 </tr>
-              ) : (
-                filteredComplaints.map((cmp) => (
-                  <tr key={cmp.id}>
-                    <td style={{ fontWeight: 700, color: 'var(--color-blue)', whiteSpace: 'nowrap' }}>
-                      {cmp.id}
-                    </td>
-                    <td>{cmp.citizenName}</td>
-                    <td style={{ fontWeight: 500 }}>{cmp.category}</td>
-                    <td style={{ maxWidth: '240px' }}>
-                      <div>{cmp.location}</div>
-                      <span style={{ fontSize: '11px', color: 'var(--color-dark-brown-muted)' }}>{cmp.zone}</span>
-                    </td>
-                    <td style={{ fontSize: '12px', whiteSpace: 'nowrap' }}>{cmp.createdAt}</td>
-                    <td>
-                      <select
-                        value={cmp.assignedStaff}
-                        onChange={(e) => updateComplaintStatus(cmp.id, cmp.status, e.target.value)}
-                        style={{
-                          fontSize: '12px',
-                          padding: '4px',
-                          borderRadius: '4px',
-                          border: '1px solid var(--color-border)',
-                          backgroundColor: 'var(--color-cream-light)',
-                        }}
-                      >
-                        <option value="Unassigned">Unassigned</option>
-                        <option value="Ramesh Kumar (Vehicle #DL-04-E-1029)">Ramesh Kumar (DL-04)</option>
-                        <option value="Sunil Verma">Sunil Verma (DL-01)</option>
-                        <option value="Mohd. Aslam">Mohd. Aslam (DL-07)</option>
-                      </select>
-                    </td>
-                    <td>
-                      <StatusBadge status={cmp.status} />
-                    </td>
-                    <td>
-                      <div style={{ display: 'flex', gap: '4px' }}>
-                        {cmp.status !== 'resolved' && (
-                          <button
-                            type="button"
-                            className="btn btn-secondary btn-sm"
-                            style={{ fontSize: '11px', padding: '4px 8px' }}
-                            onClick={() => updateComplaintStatus(cmp.id, 'resolved')}
-                          >
-                            Resolve
-                          </button>
-                        )}
-                        {cmp.status === 'submitted' && (
-                          <button
-                            type="button"
-                            className="btn btn-primary btn-sm"
-                            style={{ fontSize: '11px', padding: '4px 8px' }}
-                            onClick={() => updateComplaintStatus(cmp.id, 'in-progress')}
-                          >
-                            Dispatch
-                          </button>
-                        )}
-                      </div>
+              </thead>
+              <tbody>
+                {filteredComplaints.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} style={{ textAlign: 'center', padding: '24px', color: 'var(--color-dark-brown-muted)' }}>
+                      No complaints matching current filter.
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  paginatedComplaints.map((cmp) => (
+                    <tr key={cmp.id}>
+                      <td style={{ fontWeight: 700, color: 'var(--color-blue)', whiteSpace: 'nowrap' }}>
+                        {cmp.id}
+                      </td>
+                      <td>{cmp.citizenName}</td>
+                      <td style={{ fontWeight: 500 }}>{cmp.category}</td>
+                      <td style={{ maxWidth: '240px' }}>
+                        <div>{cmp.location}</div>
+                        <span style={{ fontSize: '11px', color: 'var(--color-dark-brown-muted)' }}>{cmp.zone}</span>
+                      </td>
+                      <td style={{ fontSize: '12px', whiteSpace: 'nowrap' }}>{cmp.createdAt}</td>
+                      <td>
+                        <select
+                          value={cmp.assignedStaff}
+                          onChange={(e) => updateComplaintStatus(cmp.id, cmp.status, e.target.value)}
+                          style={{
+                            fontSize: '12px',
+                            padding: '4px',
+                            borderRadius: '4px',
+                            border: '1px solid var(--color-border)',
+                            backgroundColor: 'var(--color-cream-light)',
+                          }}
+                        >
+                          <option value="Unassigned">Unassigned</option>
+                          <option value="Ramesh Kumar (Vehicle #DL-04-E-1029)">Ramesh Kumar (DL-04)</option>
+                          <option value="Sunil Verma">Sunil Verma (DL-01)</option>
+                          <option value="Mohd. Aslam">Mohd. Aslam (DL-07)</option>
+                        </select>
+                      </td>
+                      <td>
+                        <StatusBadge status={cmp.status} />
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', gap: '4px' }}>
+                          {cmp.status !== 'resolved' && (
+                            <button
+                              type="button"
+                              className="btn btn-secondary btn-sm"
+                              style={{ fontSize: '11px', padding: '4px 8px' }}
+                              disabled={loadingAction?.id === cmp.id && loadingAction?.action === 'resolve'}
+                              onClick={() => handleActionClick(cmp.id, 'resolved', 'resolve')}
+                            >
+                              {loadingAction?.id === cmp.id && loadingAction?.action === 'resolve' ? (
+                                <Loader2 size={12} className="spin-icon" />
+                              ) : (
+                                'Resolve'
+                              )}
+                            </button>
+                          )}
+                          {cmp.status === 'submitted' && (
+                            <button
+                              type="button"
+                              className="btn btn-primary btn-sm"
+                              style={{ fontSize: '11px', padding: '4px 8px' }}
+                              disabled={loadingAction?.id === cmp.id && loadingAction?.action === 'dispatch'}
+                              onClick={() => handleActionClick(cmp.id, 'in-progress', 'dispatch')}
+                            >
+                              {loadingAction?.id === cmp.id && loadingAction?.action === 'dispatch' ? (
+                                <Loader2 size={12} className="spin-icon" />
+                              ) : (
+                                'Dispatch'
+                              )}
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Section 10: Pagination Footer */}
+          {filteredComplaints.length > 0 && (
+            <div className="table-pagination">
+              <span className="pagination-info">
+                Showing {Math.min((complaintsPage - 1) * PAGE_SIZE + 1, filteredComplaints.length)}–
+                {Math.min(complaintsPage * PAGE_SIZE, filteredComplaints.length)} of {filteredComplaints.length} entries
+              </span>
+              <div className="pagination-controls">
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  disabled={complaintsPage === 1}
+                  onClick={() => setComplaintsPage((p) => Math.max(p - 1, 1))}
+                  aria-label="Previous Page"
+                >
+                  <ChevronLeft size={14} />
+                  <span>Prev</span>
+                </button>
+                <span className="pagination-current">
+                  Page {complaintsPage} of {totalComplaintPages}
+                </span>
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  disabled={complaintsPage === totalComplaintPages}
+                  onClick={() => setComplaintsPage((p) => Math.min(p + 1, totalComplaintPages))}
+                  aria-label="Next Page"
+                >
+                  <span>Next</span>
+                  <ChevronRight size={14} />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
-      {/* TAB 2: SPECIAL PICKUPS TABLE */}
+      {/* TAB 2: SPECIAL PICKUPS TABLE WITH PAGINATION */}
       {activeTab === 'pickups' && (
-        <div className="table-container">
-          <table className="civic-table">
-            <thead>
-              <tr>
-                <th>Booking ID</th>
-                <th>Citizen</th>
-                <th>Waste Type</th>
-                <th>Scheduled Date & Slot</th>
-                <th>Pickup Location</th>
-                <th>Fee</th>
-                <th>Payment Status</th>
-                <th>Assigned Crew</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredPickups.map((pck) => (
-                <tr key={pck.id}>
-                  <td style={{ fontWeight: 700, color: 'var(--color-blue)', whiteSpace: 'nowrap' }}>
-                    {pck.id}
-                  </td>
-                  <td>{pck.citizenName}</td>
-                  <td style={{ fontWeight: 500 }}>{pck.pickupType}</td>
-                  <td style={{ fontSize: '12px', whiteSpace: 'nowrap' }}>
-                    <div>{pck.scheduledDate}</div>
-                    <span style={{ color: 'var(--color-dark-brown-muted)', fontSize: '11px' }}>{pck.timeSlot}</span>
-                  </td>
-                  <td style={{ maxWidth: '200px' }}>{pck.address}</td>
-                  <td style={{ fontWeight: 600, color: 'var(--color-blue)' }}>₹{pck.fee}</td>
-                  <td>
-                    <StatusBadge status={pck.paymentStatus} />
-                  </td>
-                  <td style={{ fontSize: '12px' }}>{pck.assignedStaff || 'Unassigned'}</td>
-                  <td>
-                    <StatusBadge status={pck.status} />
-                  </td>
+        <div>
+          <div className="table-container">
+            <table className="civic-table">
+              <thead>
+                <tr>
+                  <th>Booking ID</th>
+                  <th>Citizen</th>
+                  <th>Waste Type</th>
+                  <th>Scheduled Date & Slot</th>
+                  <th>Pickup Location</th>
+                  <th>Fee</th>
+                  <th>Payment Status</th>
+                  <th>Assigned Crew</th>
+                  <th>Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {filteredPickups.length === 0 ? (
+                  <tr>
+                    <td colSpan={9} style={{ textAlign: 'center', padding: '24px', color: 'var(--color-dark-brown-muted)' }}>
+                      No special pickups matching current query.
+                    </td>
+                  </tr>
+                ) : (
+                  paginatedPickups.map((pck) => (
+                    <tr key={pck.id}>
+                      <td style={{ fontWeight: 700, color: 'var(--color-blue)', whiteSpace: 'nowrap' }}>
+                        {pck.id}
+                      </td>
+                      <td>{pck.citizenName}</td>
+                      <td style={{ fontWeight: 500 }}>{pck.pickupType}</td>
+                      <td style={{ fontSize: '12px', whiteSpace: 'nowrap' }}>
+                        <div>{pck.scheduledDate}</div>
+                        <span style={{ color: 'var(--color-dark-brown-muted)', fontSize: '11px' }}>{pck.timeSlot}</span>
+                      </td>
+                      <td style={{ maxWidth: '200px' }}>{pck.address}</td>
+                      <td style={{ fontWeight: 600, color: 'var(--color-blue)' }}>₹{pck.fee}</td>
+                      <td>
+                        <StatusBadge status={pck.paymentStatus} />
+                      </td>
+                      <td style={{ fontSize: '12px' }}>{pck.assignedStaff || 'Unassigned'}</td>
+                      <td>
+                        <StatusBadge status={pck.status} />
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Section 10: Pagination Footer */}
+          {filteredPickups.length > 0 && (
+            <div className="table-pagination">
+              <span className="pagination-info">
+                Showing {Math.min((pickupsPage - 1) * PAGE_SIZE + 1, filteredPickups.length)}–
+                {Math.min(pickupsPage * PAGE_SIZE, filteredPickups.length)} of {filteredPickups.length} entries
+              </span>
+              <div className="pagination-controls">
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  disabled={pickupsPage === 1}
+                  onClick={() => setPickupsPage((p) => Math.max(p - 1, 1))}
+                  aria-label="Previous Page"
+                >
+                  <ChevronLeft size={14} />
+                  <span>Prev</span>
+                </button>
+                <span className="pagination-current">
+                  Page {pickupsPage} of {totalPickupPages}
+                </span>
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  disabled={pickupsPage === totalPickupPages}
+                  onClick={() => setPickupsPage((p) => Math.min(p + 1, totalPickupPages))}
+                  aria-label="Next Page"
+                >
+                  <span>Next</span>
+                  <ChevronRight size={14} />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

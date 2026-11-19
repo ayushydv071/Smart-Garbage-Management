@@ -31,7 +31,6 @@ const createStopIcon = (order, isCompleted, isSkipped) => {
         font-weight: 700;
         font-size: 13px;
         border: 2px solid #FFFFFF;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.25);
       ">
         ${label}
       </div>
@@ -57,8 +56,7 @@ const createCitizenIcon = () => {
         justify-content: center;
         font-weight: 700;
         font-size: 16px;
-        border: 3px solid #FFFFFF;
-        box-shadow: 0 3px 6px rgba(242,118,94,0.4);
+        border: 2px solid #FFFFFF;
       ">
         📍
       </div>
@@ -66,6 +64,37 @@ const createCitizenIcon = () => {
     iconSize: [34, 34],
     iconAnchor: [17, 17],
     popupAnchor: [0, -17],
+  });
+};
+
+// Section 12: Live Truck Marker with restrained pulsing ring (opacity/scale animation only, #315B8C blue)
+const createTruckIcon = () => {
+  return L.divIcon({
+    className: 'custom-truck-marker',
+    html: `
+      <div style="position: relative; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">
+        <div class="truck-pulse-ring"></div>
+        <div style="
+          background-color: #315B8C;
+          color: #F5EBDD;
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 15px;
+          border: 2px solid #F5EBDD;
+          position: relative;
+          z-index: 2;
+        ">
+          🚛
+        </div>
+      </div>
+    `,
+    iconSize: [36, 36],
+    iconAnchor: [18, 18],
+    popupAnchor: [0, -18],
   });
 };
 
@@ -78,6 +107,10 @@ export const LeafletMap = ({ stops = [], citizenCoordinates = [28.6142, 77.2110]
   }, [stops]);
 
   const citizenIcon = useMemo(() => createCitizenIcon(), []);
+  const truckIcon = useMemo(() => createTruckIcon(), []);
+
+  // Section 12: Active live truck position along route
+  const truckPosition = [28.6151, 77.2122];
 
   return (
     <div style={{ position: 'relative' }}>
@@ -115,6 +148,34 @@ export const LeafletMap = ({ stops = [], citizenCoordinates = [28.6142, 77.2110]
               </p>
               <div style={{ marginTop: '4px', fontSize: '11px', color: '#315B8C', fontWeight: 600 }}>
                 Scheduled Collection: Tomorrow, 8:00 AM
+              </div>
+            </div>
+          </Popup>
+        </Marker>
+
+        {/* Section 12: Live Collection Truck Marker with popup flat card */}
+        <Marker position={truckPosition} icon={truckIcon}>
+          <Popup>
+            <div style={{ padding: '4px', maxWidth: '220px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: '#315B8C', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+                  Live Fleet Tracker
+                </span>
+                <span style={{ fontSize: '10px', backgroundColor: 'rgba(49, 91, 140, 0.15)', color: '#315B8C', padding: '2px 5px', borderRadius: '4px', fontWeight: 600 }}>
+                  Active GPS
+                </span>
+              </div>
+              <div style={{ fontSize: '13px', fontWeight: 600, color: '#413333' }}>
+                Driver: Ramesh Kumar
+              </div>
+              <div style={{ fontSize: '12px', color: '#413333', opacity: 0.85, marginTop: '2px' }}>
+                Vehicle: <strong>DL-04-E-1029</strong> (Compactor)
+              </div>
+              <div style={{ fontSize: '12px', borderTop: '1px solid rgba(65, 51, 51, 0.15)', paddingTop: '6px', marginTop: '6px' }}>
+                <div>Heading towards: <strong>Stop #4</strong></div>
+                <div style={{ color: '#315B8C', fontWeight: 600, marginTop: '2px' }}>
+                  ETA: ~8 mins (09:20 AM)
+                </div>
               </div>
             </div>
           </Popup>
@@ -171,7 +232,7 @@ export const LeafletMap = ({ stops = [], citizenCoordinates = [28.6142, 77.2110]
         })}
       </MapContainer>
 
-      {/* Map Legend Overlay */}
+      {/* Map Legend Overlay per Section 12 */}
       <div
         style={{
           position: 'absolute',
@@ -184,13 +245,16 @@ export const LeafletMap = ({ stops = [], citizenCoordinates = [28.6142, 77.2110]
           fontSize: '12px',
           zIndex: 1000,
           color: 'var(--color-dark-brown)',
-          boxShadow: '0 2px 4px rgba(0,0,0,0.08)'
         }}
       >
         <div style={{ fontWeight: 600, marginBottom: '4px', color: 'var(--color-dark-brown)' }}>Route Legend</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '3px' }}>
           <span style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#F2765E', display: 'inline-block' }} />
           <span>Your Address</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '3px' }}>
+          <span style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#315B8C', display: 'inline-block' }} />
+          <span>Live Collection Truck</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '3px' }}>
           <span style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#315B8C', display: 'inline-block' }} />

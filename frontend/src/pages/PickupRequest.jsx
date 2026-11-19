@@ -12,7 +12,8 @@ import {
   ArrowRight,
   ArrowLeft,
   AlertCircle,
-  ShieldCheck
+  ShieldCheck,
+  Loader2
 } from 'lucide-react';
 
 const PICKUP_TYPES = [
@@ -464,7 +465,14 @@ export const PickupRequest = () => {
                     onClick={handleSimulatePaymentSuccess}
                     disabled={isProcessingPayment}
                   >
-                    {isProcessingPayment ? 'Capturing Razorpay Payment...' : `Simulate Pay ₹${selectedType.fee}`}
+                    {isProcessingPayment ? (
+                      <>
+                        <Loader2 size={16} className="spin-icon" />
+                        <span>Capturing Razorpay Payment...</span>
+                      </>
+                    ) : (
+                      <span>Simulate Pay ₹{selectedType.fee}</span>
+                    )}
                   </button>
                 </div>
               </div>

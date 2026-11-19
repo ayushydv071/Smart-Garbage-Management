@@ -24,12 +24,36 @@ export const AppProvider = ({ children }) => {
   const [zones] = useState(MOCK_ZONES);
   const [kpiStats, setKpiStats] = useState(MOCK_KPI_STATS);
 
-  // Role Switcher helper
+  // Micro-Interactions Toast System per Section 11 of design.md
+  const [toasts, setToasts] = useState([]);
+
+  const removeToast = (id) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  };
+
+  const showToast = (message, type = 'success') => {
+    const id = `toast-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+    setToasts((prev) => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      removeToast(id);
+    }, 4500);
+  };
+
+  // Role Switcher helper (Used by Demo Toolbar per Section 9)
   const switchRole = (role) => {
     setCurrentRole(role);
-    if (role === 'citizen') setCurrentUser(MOCK_CITIZEN_USER);
-    if (role === 'staff') setCurrentUser(MOCK_STAFF_USER);
-    if (role === 'admin') setCurrentUser(MOCK_ADMIN_USER);
+    if (role === 'citizen') {
+      setCurrentUser(MOCK_CITIZEN_USER);
+      showToast('Switched to Citizen persona (Ayush Yadav)', 'info');
+    }
+    if (role === 'staff') {
+      setCurrentUser(MOCK_STAFF_USER);
+      showToast('Switched to Sanitation Staff persona (Ramesh Kumar)', 'info');
+    }
+    if (role === 'admin') {
+      setCurrentUser(MOCK_ADMIN_USER);
+      showToast('Switched to Municipal Administrator persona (Dr. Sunita Sharma)', 'info');
+    }
   };
 
   // Add new complaint
@@ -50,6 +74,7 @@ export const AppProvider = ({ children }) => {
       totalComplaints: prev.totalComplaints + 1,
       pendingComplaints: prev.pendingComplaints + 1
     }));
+    showToast(`Complaint ${created.id} submitted successfully.`, 'success');
     return created;
   };
 
@@ -69,6 +94,7 @@ export const AppProvider = ({ children }) => {
       ...prev,
       specialPickupRevenue: prev.specialPickupRevenue + created.fee
     }));
+    showToast(`Pickup request ${created.id} confirmed and scheduled.`, 'success');
     return created;
   };
 
@@ -88,6 +114,7 @@ export const AppProvider = ({ children }) => {
         return req;
       })
     );
+    showToast(`Pickup request ${id} cancelled. 100% refund initiated.`, 'info');
   };
 
   // Update staff stop status
@@ -105,6 +132,11 @@ export const AppProvider = ({ children }) => {
         return stop;
       })
     );
+    if (status === 'completed') {
+      showToast(`Stop #${stopId} marked complete and cleared.`, 'success');
+    } else if (status === 'skipped') {
+      showToast(`Stop #${stopId} marked skipped (${skipReason || 'Blocked'}).`, 'error');
+    }
   };
 
   // Admin: Update complaint status & assigned staff
@@ -128,6 +160,7 @@ export const AppProvider = ({ children }) => {
         return cmp;
       })
     );
+    showToast(`Complaint ${complaintId} updated to "${newStatus}".`, 'success');
   };
 
   return (
@@ -146,6 +179,9 @@ export const AppProvider = ({ children }) => {
         cancelPickupRequest,
         updateStopStatus,
         updateComplaintStatus,
+        toasts,
+        showToast,
+        removeToast,
       }}
     >
       {children}

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
-import { Upload, ArrowLeft, CheckCircle2, AlertCircle, Camera } from 'lucide-react';
+import { Upload, ArrowLeft, CheckCircle2, AlertCircle, Camera, Loader2 } from 'lucide-react';
 
 export const ComplaintForm = () => {
   const { currentUser, addComplaint } = useApp();
@@ -14,6 +14,7 @@ export const ComplaintForm = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState('');
   const [submittedId, setSubmittedId] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -25,21 +26,24 @@ export const ComplaintForm = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
     const finalLocation =
       locationMode === 'registered'
         ? currentUser.address || 'Sector 12, Indira Nagar'
         : customAddress;
 
-    const newRecord = addComplaint({
-      citizenName: currentUser.name,
-      category,
-      location: finalLocation,
-      description,
-      photoUrl: previewUrl || 'https://images.unsplash.com/photo-1530587191325-3db32d826c18?auto=format&fit=crop&w=600&q=80',
-      zone: currentUser.zoneName || 'Sector 12',
-    });
-
-    setSubmittedId(newRecord.id);
+    setTimeout(() => {
+      const newRecord = addComplaint({
+        citizenName: currentUser.name,
+        category,
+        location: finalLocation,
+        description,
+        photoUrl: previewUrl || 'https://images.unsplash.com/photo-1530587191325-3db32d826c18?auto=format&fit=crop&w=600&q=80',
+        zone: currentUser.zoneName || 'Sector 12',
+      });
+      setIsSubmitting(false);
+      setSubmittedId(newRecord.id);
+    }, 600);
   };
 
   return (
@@ -283,14 +287,22 @@ export const ComplaintForm = () => {
               </div>
             </div>
 
-            {/* Single Coral Submit Button per Design Spec */}
+            {/* Single Coral Submit Button with Loading State per Design Spec */}
             <div style={{ marginTop: '24px' }}>
               <button
                 type="submit"
                 className="btn btn-primary btn-lg"
                 style={{ width: '100%' }}
+                disabled={isSubmitting}
               >
-                Submit Incident Report
+                {isSubmitting ? (
+                  <>
+                    <Loader2 size={18} className="spin-icon" />
+                    <span>Submitting Incident Report...</span>
+                  </>
+                ) : (
+                  <span>Submit Incident Report</span>
+                )}
               </button>
             </div>
           </form>

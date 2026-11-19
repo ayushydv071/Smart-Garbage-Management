@@ -8,13 +8,17 @@ import { ComplaintForm } from './pages/ComplaintForm';
 import { PickupRequest } from './pages/PickupRequest';
 import { StaffRouteView } from './pages/StaffRouteView';
 import { AdminDashboard } from './pages/AdminDashboard';
+import { ToastContainer } from './components/ToastContainer';
+import { DemoToolbar } from './components/DemoToolbar';
 
-// Shell layout that wraps pages with Navbar and civic footer
+// Shell layout that wraps pages with Navbar, toasts, demo toolbar and civic footer
 const Layout = ({ children }) => {
   return (
     <div className="app-container">
       <Navbar />
       <main className="main-content">{children}</main>
+      <ToastContainer />
+      <DemoToolbar />
       <footer className="portal-footer">
         <div className="footer-inner">
           <div>

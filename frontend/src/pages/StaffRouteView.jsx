@@ -10,7 +10,8 @@ import {
   MapPin,
   Calendar,
   Check,
-  RotateCcw
+  RotateCcw,
+  Loader2
 } from 'lucide-react';
 
 export const StaffRouteView = () => {
@@ -28,8 +29,14 @@ export const StaffRouteView = () => {
   // Special pickups assigned to this driver
   const assignedPickups = pickupRequests.filter((p) => p.assignedStaff && p.assignedStaff.includes('Ramesh'));
 
+  const [loadingStopId, setLoadingStopId] = useState(null);
+
   const handleMarkComplete = (stopId) => {
-    updateStopStatus(stopId, 'completed');
+    setLoadingStopId(stopId);
+    setTimeout(() => {
+      updateStopStatus(stopId, 'completed');
+      setLoadingStopId(null);
+    }, 450);
   };
 
   const handleConfirmSkip = () => {
@@ -199,10 +206,15 @@ export const StaffRouteView = () => {
                       <button
                         type="button"
                         className="btn btn-primary btn-sm"
+                        disabled={loadingStopId === stop.id}
                         onClick={() => handleMarkComplete(stop.id)}
                       >
-                        <Check size={14} />
-                        <span>Mark Complete</span>
+                        {loadingStopId === stop.id ? (
+                          <Loader2 size={14} className="spin-icon" />
+                        ) : (
+                          <Check size={14} />
+                        )}
+                        <span>{loadingStopId === stop.id ? 'Clearing...' : 'Mark Complete'}</span>
                       </button>
                       <button
                         type="button"

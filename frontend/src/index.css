@@ -398,6 +398,7 @@ a:focus-visible {
 /* Table styles for Admin / Reports */
 .table-container {
   overflow-x: auto;
+  overflow-y: visible;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   background-color: var(--color-cream-card);
@@ -429,8 +430,41 @@ a:focus-visible {
   border-bottom: none;
 }
 
-.civic-table tr:hover {
-  background-color: rgba(65, 51, 51, 0.03);
+/* Section 10: Row hover state - subtle background shift */
+.civic-table tbody tr:hover {
+  background-color: rgba(65, 51, 51, 0.04);
+}
+
+/* Section 10: Table Pagination */
+.table-pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: var(--color-cream-card);
+  border: 1px solid var(--color-border);
+  border-top: none;
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  font-size: 13px;
+  color: var(--color-dark-brown-muted);
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.pagination-info {
+  font-weight: 500;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pagination-current {
+  font-weight: 600;
+  color: var(--color-dark-brown);
+  padding: 0 4px;
 }
 
 /* Leaflet Map specific styling */
@@ -460,4 +494,210 @@ a:focus-visible {
   align-items: center;
   flex-wrap: wrap;
   gap: 12px;
+}
+
+/* ========================================================
+   SECTION 11 & 12: MICRO-INTERACTIONS & MOTION
+   ======================================================== */
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spin-icon {
+  animation: spin 1s linear infinite;
+}
+
+/* Section 12: Restrained Live Truck Pulsing Ring (scale/opacity only, blue #315B8C) */
+@keyframes truckPulse {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.85;
+  }
+  60% {
+    transform: scale(1.45);
+    opacity: 0.15;
+  }
+  100% {
+    transform: scale(0.9);
+    opacity: 0.85;
+  }
+}
+
+.truck-pulse-ring {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--color-blue);
+  animation: truckPulse 2s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ========================================================
+   SECTION 11: TOAST NOTIFICATIONS (FLAT, FUNCTIONAL COLORS)
+   ======================================================== */
+
+.toast-container {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 400px;
+  width: calc(100% - 48px);
+  pointer-events: none;
+}
+
+.toast-item {
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  background-color: var(--color-cream-light);
+  border: 1px solid var(--color-border);
+  box-shadow: none; /* Flat per Section 8 & 11 */
+}
+
+.toast-success {
+  background-color: var(--color-cream-light);
+  border: 1px solid var(--color-blue);
+  border-left: 4px solid var(--color-blue);
+  color: var(--color-dark-brown);
+}
+
+.toast-error {
+  background-color: #FADBD6;
+  border: 1px solid #D2533B;
+  border-left: 4px solid #D2533B;
+  color: var(--color-dark-brown);
+}
+
+.toast-info {
+  background-color: var(--color-cream-light);
+  border: 1px solid var(--color-border);
+  border-left: 4px solid var(--color-blue);
+  color: var(--color-dark-brown);
+}
+
+.toast-close-btn {
+  background: transparent;
+  border: none;
+  color: var(--color-dark-brown-muted);
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 2px;
+}
+
+.toast-close-btn:hover {
+  color: var(--color-dark-brown);
+}
+
+/* ========================================================
+   SECTION 9: DEMO / EVALUATOR TOOLBAR (PINNED & DASHED)
+   ======================================================== */
+
+.demo-toolbar {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  z-index: 9999;
+}
+
+.demo-toolbar-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--color-cream-light);
+  color: var(--color-dark-brown);
+  border: 1px dashed var(--color-dark-brown);
+  border-radius: var(--radius-sm);
+  padding: 7px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.demo-toolbar-trigger:hover {
+  background-color: var(--color-cream);
+}
+
+.demo-tag {
+  background-color: var(--color-dark-brown);
+  color: var(--color-cream);
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 2px;
+  letter-spacing: 0.5px;
+}
+
+.demo-toolbar-panel {
+  background-color: #FAF5EE;
+  border: 1px dashed var(--color-dark-brown);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  width: 290px;
+}
+
+.demo-toolbar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.demo-toolbar-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-dark-brown-muted);
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.demo-toolbar-close:hover {
+  color: var(--color-dark-brown);
+}
+
+.demo-role-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background-color: var(--color-cream);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.demo-role-btn:hover {
+  background-color: #EFE4D4;
+}
+
+.demo-role-btn.active {
+  border: 1px solid var(--color-blue);
+  background-color: var(--color-blue-soft);
+}
+
+.demo-active-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--color-blue);
 }
